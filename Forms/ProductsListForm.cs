@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SheetMaterialDataBaseApp.Forms;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
@@ -9,22 +10,24 @@ namespace SheetMaterialDataBaseApp
     public partial class ProductsListForm : Form
     {
         readonly string fileName = "result.xml";
-        List<Product> products;
+        public List<Product> Products { get; set; }
         int id = 1;
+        int idValue;
         public ProductsListForm()
         {
             InitializeComponent();
-            products = new List<Product>();
+            Products = new List<Product>();
             if (File.Exists(fileName))
             {
                 LoadDataFromXml();
                 SetDataToDataGrid();
             }
+            idValue = Products[Products.Count - 1].Id;
         }
 
         private void SetDataToDataGrid()
         {
-            foreach (var product in products)
+            foreach (var product in Products)
             {
                 productsGrid.Rows.Add();
                 productsGrid.Rows[id - 1].Cells[0].Value = product.Id;
@@ -51,19 +54,26 @@ namespace SheetMaterialDataBaseApp
                     if (node.Name == "Count")
                         product.TotalCount = int.Parse(node.InnerText);
                 }
-                products.Add(product);
+                Products.Add(product);
             }
         }
 
         private void AddButton_Click(object sender, EventArgs e)
         {
+            AddProductForm addProduct = new AddProductForm();
+            DialogResult dialog = addProduct.ShowDialog();
+            if (dialog == DialogResult.Cancel)
+            {
+                return;
+            }
+
             Product product = new Product
             {
-                Id = id,
-                Name = "Test product " + id,
+                Id = Products[Products.Count - 1].Id + 1,
+                Name = addProduct.TextBoxValue + id,
                 Materials = new List<Material>()
             };
-            products.Add(product);
+            Products.Add(product);
             productsGrid.Rows.Add();
             productsGrid.Rows[id - 1].Cells[0].Value = product.Id;
             productsGrid.Rows[id - 1].Cells[1].Value = product.Name;
@@ -77,7 +87,7 @@ namespace SheetMaterialDataBaseApp
             var xmlDeclaration = doc.CreateXmlDeclaration("1.0", "UTF-8", null);
             doc.AppendChild(xmlDeclaration);
             var root = doc.CreateElement("ProductList");
-            foreach (var item in products)
+            foreach (var item in Products)
             {
                 XmlElement node = doc.CreateElement("Product");
                 AddChildNode("ID", item.Id.ToString(), node, doc);
@@ -106,6 +116,17 @@ namespace SheetMaterialDataBaseApp
                 };
                 materialsForm.Show();
                 //MessageBox.Show("Button " + productsGrid[1, e.RowIndex].Value?.ToString() + " pressed");
+            }
+        }
+
+        private void DeleteButton_Click(object sender, EventArgs e)
+        {
+            if (productsGrid.SelectedRows.Count == 1)
+            {
+                int index = productsGrid.CurrentRow.Index;
+                productsGrid.Rows.RemoveAt(index);
+                id--;
+                Products.RemoveAt(index);
             }
         }
     }
