@@ -8,7 +8,7 @@ namespace SheetMaterialDataBaseApp
 {
     public partial class ProductsListForm : Form
     {
-        string fileName = "result.xml";
+        readonly string fileName = "result.xml";
         List<Product> products;
         int id = 1;
         public ProductsListForm()
@@ -100,7 +100,12 @@ namespace SheetMaterialDataBaseApp
         {
             if (e.ColumnIndex == 3)
             {
-                MessageBox.Show("Button " + productsGrid[1, e.RowIndex].Value?.ToString() + " pressed");
+                MaterialsListForm materialsForm = new MaterialsListForm
+                {
+                    Text = productsGrid[1, e.RowIndex].Value?.ToString()
+                };
+                materialsForm.Show();
+                //MessageBox.Show("Button " + productsGrid[1, e.RowIndex].Value?.ToString() + " pressed");
             }
         }
     }
